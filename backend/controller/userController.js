@@ -229,7 +229,7 @@ const createPayment = async (req, res) => {
       {
         mode: "0011",
         payerReference: process.env.BKASH_PAYER,
-        callbackURL: `http://localhost:4000/api/user/verify-payment?appointmentId=${appointmentId}`,
+        callbackURL: `${process.env.VERIFY_PAYMENT_URL_BASE}?appointmentId=${appointmentId}`,
         amount: appointmentData.amount,
         currency: "BDT",
         intent: "sale",
@@ -256,7 +256,7 @@ const verifyPayment = async (req, res) => {
   const { paymentID, status, appointmentId } = req.query;
   if (status === "cancel" || status === "failure") {
     return res.redirect(
-      `http://localhost:5173/my-appointments?success=false&message=Payment+Failed`
+      `${process.env.PAYMENT_STATUS_URL}?success=false&message=Payment+Failed`
     );
   }
   if (status === "success") {
@@ -280,7 +280,7 @@ const verifyPayment = async (req, res) => {
         });
       }
       return res.redirect(
-        `http://localhost:5173/my-appointments?success=true&message=Payment+Successful+via+Bkash`
+        `${process.env.PAYMENT_STATUS_URL}?success=true&message=Payment+Successful+via+Bkash`
       );
     } catch (error) {
       console.log(error);
