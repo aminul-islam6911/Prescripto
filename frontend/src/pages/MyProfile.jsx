@@ -175,7 +175,7 @@ const MyProfile = () => {
                 }
                 value={userData.gender}
               >
-                <option value="Not Selected">Male</option>
+                <option value="Not Selected">Not Selected</option>
                 <option value="Male">Male</option>
                 <option value="Female">Female</option>
               </select>
