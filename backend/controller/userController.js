@@ -65,6 +65,8 @@ const loginUser = async (req, res) => {
   }
 };
 
+// API for forgot password
+
 // API to get user profile data
 const getProfile = async (req, res) => {
   try {
@@ -336,6 +338,7 @@ const verifyPayment = async (req, res) => {
 export {
   registerUser,
   loginUser,
+  // forgotPassword,
   getProfile,
   updateProfile,
   bookAppointment,
