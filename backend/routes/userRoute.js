@@ -9,7 +9,7 @@ import {
   cancelAppointment,
   createPayment,
   verifyPayment,
-  forgotPassword,
+  // forgotPassword,
   //  refundPayment,
 } from "../controller/userController.js";
 import authUser from "../middlewares/authUser.js";
