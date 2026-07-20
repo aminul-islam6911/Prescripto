@@ -181,7 +181,8 @@ const Appointment = () => {
           </div>
         </div>
         {/* ------ Booking Slots ------ */}
-        <div className="sm:ml-72 sm:pl-4 mt-4 font-medium text-gray-700">
+        {docInfo?.available && (
+          <div className="sm:ml-72 sm:pl-4 mt-4 font-medium text-gray-700">
           <p>Booking Slots</p>
           <div className="flex gap-3 items-center w-full overflow-x-scroll mt-4">
             {/* This will show unsolved after end time */}
@@ -244,7 +245,8 @@ const Appointment = () => {
           >
             Book an Appointment
           </button>
-        </div>
+          </div>
+        )}
         {/* ------ Related Doctors ------ */}
         <RelatedDoctors docId={docId} speciality={docInfo.speciality} />
       </div>
