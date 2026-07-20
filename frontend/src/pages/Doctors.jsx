@@ -43,26 +43,14 @@ const Doctors = () => {
       <p className="text-gray-600">Browse through the doctors specialist.</p>
       <div className="flex flex-col sm:flex-row items-start gap-5 mt-5">
         <button
-          className={`py-1 px-3 border rounded text-sm  transition-all sm:hidden ${
-            showFilter ? "bg-primary text-white" : ""
-          }`}
+          className={`py-1 px-3 border rounded text-sm  transition-all sm:hidden ${showFilter ? "bg-primary text-white" : ""}`}
           onClick={() => setShowFilter((prev) => !prev)}
         >
           Filters
         </button>
-        <div
-          className={`flex-col gap-4 text-sm text-gray-600 ${
-            showFilter ? "flex" : "hidden sm:flex"
-          }`}
-        >
+        <div className={`flex-col gap-4 text-sm text-gray-600 ${showFilter ? "flex" : "hidden sm:flex"}`}>
           <p
-            onClick={() =>
-              setShowFilter((prev) => !prev)(
-                speciality === "Gynecologist"
-                  ? navigate("/doctors")
-                  : navigate("/doctors/Gynecologist")
-              )
-            }
+            onClick={() => setShowFilter((prev) => !prev)(speciality === "Gynecologist" ? navigate("/doctors") : navigate("/doctors/Gynecologist"))}
             className={`w-[94vw] sm:w-auto pl-3 py-1.5 pr-16 border border-gray-300 rounded transition-all cursor-pointer ${
               speciality === "Gynecologist" ? "bg-indigo-100 text-black" : ""
             }`}
@@ -71,28 +59,16 @@ const Doctors = () => {
           </p>
           <p
             onClick={() =>
-              setShowFilter((prev) => !prev)(
-                speciality === "General physician"
-                  ? navigate("/doctors")
-                  : navigate("/doctors/General physician")
-              )
+              setShowFilter((prev) => !prev)(speciality === "General physician" ? navigate("/doctors") : navigate("/doctors/General physician"))
             }
             className={`w-[94vw] sm:w-auto pl-3 py-1.5 pr-16 border border-gray-300 rounded transition-all cursor-pointer ${
-              speciality === "General physician"
-                ? "bg-indigo-100 text-black"
-                : ""
+              speciality === "General physician" ? "bg-indigo-100 text-black" : ""
             }`}
           >
             General physician
           </p>
           <p
-            onClick={() =>
-              setShowFilter((prev) => !prev)(
-                speciality === "Dermatologist"
-                  ? navigate("/doctors")
-                  : navigate("/doctors/Dermatologist")
-              )
-            }
+            onClick={() => setShowFilter((prev) => !prev)(speciality === "Dermatologist" ? navigate("/doctors") : navigate("/doctors/Dermatologist"))}
             className={`w-[94vw] sm:w-auto pl-3 py-1.5 pr-16 border border-gray-300 rounded transition-all cursor-pointer ${
               speciality === "Dermatologist" ? "bg-indigo-100 text-black" : ""
             }`}
@@ -100,13 +76,7 @@ const Doctors = () => {
             Dermatologist
           </p>
           <p
-            onClick={() =>
-              setShowFilter((prev) => !prev)(
-                speciality === "Pediatricians"
-                  ? navigate("/doctors")
-                  : navigate("/doctors/Pediatricians")
-              )
-            }
+            onClick={() => setShowFilter((prev) => !prev)(speciality === "Pediatricians" ? navigate("/doctors") : navigate("/doctors/Pediatricians"))}
             className={`w-[94vw] sm:w-auto pl-3 py-1.5 pr-16 border border-gray-300 rounded transition-all cursor-pointer ${
               speciality === "Pediatricians" ? "bg-indigo-100 text-black" : ""
             }`}
@@ -114,13 +84,7 @@ const Doctors = () => {
             Pediatricians
           </p>
           <p
-            onClick={() =>
-              setShowFilter((prev) => !prev)(
-                speciality === "Neurologist"
-                  ? navigate("/doctors")
-                  : navigate("/doctors/Neurologist")
-              )
-            }
+            onClick={() => setShowFilter((prev) => !prev)(speciality === "Neurologist" ? navigate("/doctors") : navigate("/doctors/Neurologist"))}
             className={`w-[94vw] sm:w-auto pl-3 py-1.5 pr-16 border border-gray-300 rounded transition-all cursor-pointer ${
               speciality === "Neurologist" ? "bg-indigo-100 text-black" : ""
             }`}
@@ -129,16 +93,10 @@ const Doctors = () => {
           </p>
           <p
             onClick={() =>
-              setShowFilter((prev) => !prev)(
-                speciality === "Gastroenterologist"
-                  ? navigate("/doctors")
-                  : navigate("/doctors/Gastroenterologist")
-              )
+              setShowFilter((prev) => !prev)(speciality === "Gastroenterologist" ? navigate("/doctors") : navigate("/doctors/Gastroenterologist"))
             }
             className={`w-[94vw] sm:w-auto pl-3 py-1.5 pr-16 border border-gray-300 rounded transition-all cursor-pointer ${
-              speciality === "Gastroenterologist"
-                ? "bg-indigo-100 text-black"
-                : ""
+              speciality === "Gastroenterologist" ? "bg-indigo-100 text-black" : ""
             }`}
           >
             Gastroenterologist
@@ -153,8 +111,8 @@ const Doctors = () => {
             >
               <img className="bg-blue-50" src={item.image} alt="" loading="lazy" />
               <div className="p-4">
-                <div className="flex items-center gap-2 text-sm text-center text-green-500">
-                  <p className="w-2 h-2 bg-green-500 rounded-full"></p>
+                <div className={`flex items-center gap-2 text-sm text-center ${item.available ? "text-green-500" : "text-red-500"}`}>
+                  <p className={`w-2 h-2 rounded-full ${item.available ? "bg-green-500" : "bg-red-500"}`}></p>
                   <p>{item.available ? "Available" : "Not Available"}</p>
                 </div>
                 <p className="text-gray-900 text-lg font-medium">{item.name}</p>
