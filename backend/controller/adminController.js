@@ -5,6 +5,11 @@ import doctorModel from "../models/doctorModel.js";
 import { issueAuthTokens } from "../utils/authTokens.js";
 import appointmentModel from "../models/appointmentModel.js";
 import userModel from "../models/userModel.js";
+import {
+  getCachedData,
+  invalidateCache,
+  logDatabaseAccess,
+} from "../utils/cache.js";
 
 // API for adding doctor
 const addDoctor = async (req, res) => {
@@ -79,6 +84,8 @@ const addDoctor = async (req, res) => {
 
     const newDoctor = new doctorModel(doctorData);
     await newDoctor.save();
+    logDatabaseAccess(req, "write");
+    await invalidateCache(req, "doctors");
 
     res.json({ success: true, message: "Doctor Added" });
   } catch (error) {
@@ -112,7 +119,11 @@ const loginAdmin = async (req, res) => {
 // API to get all doctors list
 const allDoctors = async (req, res) => {
   try {
-    const doctors = await doctorModel.find({}).select("-password");
+    const doctors = await getCachedData(
+      req,
+      { namespace: "doctors", key: "admin:list", ttlSeconds: 300 },
+      () => doctorModel.find({}).select("-password").lean()
+    );
     res.json({ success: true, doctors });
   } catch (error) {
     console.log(error);
@@ -123,7 +134,11 @@ const allDoctors = async (req, res) => {
 // API to get all appointment list
 const appointmentsAdmin = async (req, res) => {
   try {
-    const appointments = await appointmentModel.find({});
+    const appointments = await getCachedData(
+      req,
+      { namespace: "appointments", key: "admin:all", ttlSeconds: 20 },
+      () => appointmentModel.find({}).lean()
+    );
     res.json({ success: true, appointments });
   } catch (error) {
     console.log(error);
@@ -136,11 +151,13 @@ const appointmentCancel = async (req, res) => {
   try {
     const { appointmentId } = req.body;
 
+    logDatabaseAccess(req, "read/write");
     const appointmentData = await appointmentModel.findById(appointmentId);
 
     await appointmentModel.findByIdAndUpdate(appointmentId, {
       cancelled: true,
     });
+    await invalidateCache(req, "appointments");
 
     // Updating Doctor's slot after appointment cancellation
     const { docId, slotDate, slotTime } = appointmentData;
@@ -154,6 +171,8 @@ const appointmentCancel = async (req, res) => {
     );
 
     await doctorModel.findByIdAndUpdate(docId, { slots_booked });
+    logDatabaseAccess(req, "write");
+    await invalidateCache(req, "doctors");
     res.json({ success: true, message: "Appointment cancelled" });
   } catch (error) {
     console.log(error);
@@ -164,6 +183,7 @@ const appointmentCancel = async (req, res) => {
 // API to get dashboard data for Admin
 const adminDashboard = async (req, res) => {
   try {
+    logDatabaseAccess(req);
     const doctors = await doctorModel.find({});
     const users = await userModel.find({});
     const appointments = await appointmentModel.find({});
