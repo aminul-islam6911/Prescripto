@@ -8,7 +8,6 @@ import userModel from "../models/userModel.js";
 import {
   getCachedData,
   invalidateCache,
-  logDatabaseAccess,
 } from "../utils/cache.js";
 
 // API for adding doctor
@@ -84,8 +83,7 @@ const addDoctor = async (req, res) => {
 
     const newDoctor = new doctorModel(doctorData);
     await newDoctor.save();
-    logDatabaseAccess(req, "write");
-    await invalidateCache(req, "doctors");
+    await invalidateCache("doctors");
 
     res.json({ success: true, message: "Doctor Added" });
   } catch (error) {
@@ -120,7 +118,6 @@ const loginAdmin = async (req, res) => {
 const allDoctors = async (req, res) => {
   try {
     const doctors = await getCachedData(
-      req,
       { namespace: "doctors", key: "admin:list", ttlSeconds: 300 },
       () => doctorModel.find({}).select("-password").lean()
     );
@@ -135,7 +132,6 @@ const allDoctors = async (req, res) => {
 const appointmentsAdmin = async (req, res) => {
   try {
     const appointments = await getCachedData(
-      req,
       { namespace: "appointments", key: "admin:all", ttlSeconds: 20 },
       () => appointmentModel.find({}).lean()
     );
@@ -151,13 +147,12 @@ const appointmentCancel = async (req, res) => {
   try {
     const { appointmentId } = req.body;
 
-    logDatabaseAccess(req, "read/write");
     const appointmentData = await appointmentModel.findById(appointmentId);
 
     await appointmentModel.findByIdAndUpdate(appointmentId, {
       cancelled: true,
     });
-    await invalidateCache(req, "appointments");
+    await invalidateCache("appointments");
 
     // Updating Doctor's slot after appointment cancellation
     const { docId, slotDate, slotTime } = appointmentData;
@@ -171,8 +166,7 @@ const appointmentCancel = async (req, res) => {
     );
 
     await doctorModel.findByIdAndUpdate(docId, { slots_booked });
-    logDatabaseAccess(req, "write");
-    await invalidateCache(req, "doctors");
+    await invalidateCache("doctors");
     res.json({ success: true, message: "Appointment cancelled" });
   } catch (error) {
     console.log(error);
@@ -183,7 +177,6 @@ const appointmentCancel = async (req, res) => {
 // API to get dashboard data for Admin
 const adminDashboard = async (req, res) => {
   try {
-    logDatabaseAccess(req);
     const doctors = await doctorModel.find({});
     const users = await userModel.find({});
     const appointments = await appointmentModel.find({});

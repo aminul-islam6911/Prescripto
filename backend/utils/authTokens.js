@@ -42,9 +42,6 @@ const consumeRefreshSession = async (jti, token) => {
     }
   );
 
-  console.info(
-    `[Redis] Refresh session ${result === 1 ? "found and consumed" : "not found"}`
-  );
   return result === 1;
 };
 
@@ -60,8 +57,6 @@ export const createTokenPair = async ({ id, role }) => {
   await redisClient.set(refreshSessionKey(jti), hashToken(refreshToken), {
     EX: refreshTokenLifetimeSeconds,
   });
-  console.info("[Redis] Refresh session stored");
-
   return { accessToken, refreshToken };
 };
 

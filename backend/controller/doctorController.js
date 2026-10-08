@@ -5,20 +5,17 @@ import { issueAuthTokens } from "../utils/authTokens.js";
 import {
   getCachedData,
   invalidateCache,
-  logDatabaseAccess,
 } from "../utils/cache.js";
 
 const changeAvailability = async (req, res) => {
   try {
     const { docId } = req.body;
 
-    logDatabaseAccess(req, "read/write");
     const docData = await doctorModel.findById(docId);
     await doctorModel.findByIdAndUpdate(docId, {
       available: !docData.available,
     });
-    logDatabaseAccess(req, "write");
-    await invalidateCache(req, "doctors");
+    await invalidateCache("doctors");
     res.json({ success: true, message: "Availability Changed" });
   } catch (error) {
     console.log(error);
@@ -29,7 +26,6 @@ const changeAvailability = async (req, res) => {
 const doctorList = async (req, res) => {
   try {
     const doctors = await getCachedData(
-      req,
       { namespace: "doctors", key: "public:list", ttlSeconds: 300 },
       () => doctorModel.find({}).select(["-email", "-password"]).lean()
     );
@@ -69,7 +65,6 @@ const appointmentsDoctor = async (req, res) => {
   try {
     const { docId } = req.body;
     const appointments = await getCachedData(
-      req,
       {
         namespace: "appointments",
         key: `doctor:${docId}`,
@@ -88,14 +83,12 @@ const appointmentsDoctor = async (req, res) => {
 const appointmentComplete = async (req, res) => {
   try {
     const { docId, appointmentId } = req.body;
-    logDatabaseAccess(req, "read/write");
     const appointmentData = await appointmentModel.findById(appointmentId);
     if (appointmentData && appointmentData.docId === docId) {
       await appointmentModel.findByIdAndUpdate(appointmentId, {
         isCompleted: true,
       });
-      logDatabaseAccess(req, "write");
-      await invalidateCache(req, "appointments");
+      await invalidateCache("appointments");
       return res.json({ success: true, message: "Appointment Completed" });
     } else {
       return res.json({ success: false, message: "Mark Fail" });
@@ -110,14 +103,12 @@ const appointmentComplete = async (req, res) => {
 const appointmentCancel = async (req, res) => {
   try {
     const { docId, appointmentId } = req.body;
-    logDatabaseAccess(req, "read/write");
     const appointmentData = await appointmentModel.findById(appointmentId);
     if (appointmentData && appointmentData.docId === docId) {
       await appointmentModel.findByIdAndUpdate(appointmentId, {
         cancelled: true,
       });
-      logDatabaseAccess(req, "write");
-      await invalidateCache(req, "appointments");
+      await invalidateCache("appointments");
       return res.json({ success: true, message: "Appointment Cancelled" });
     } else {
       return res.json({ success: false, message: "Cancellation Fail" });
@@ -133,7 +124,6 @@ const doctorDashboard = async (req, res) => {
   try {
     const { docId } = req.body;
     const appointments = await getCachedData(
-      req,
       {
         namespace: "appointments",
         key: `doctor-dashboard:${docId}`,
@@ -174,7 +164,6 @@ const doctorProfile = async (req, res) => {
   try {
     const { docId } = req.body;
     const profileData = await getCachedData(
-      req,
       {
         namespace: "doctors",
         key: `profile:${docId}`,
@@ -194,8 +183,7 @@ const updateDoctorProfile = async (req, res) => {
   try {
     const { docId, fees, address, available } = req.body;
     await doctorModel.findByIdAndUpdate(docId, { fees, address, available });
-    logDatabaseAccess(req, "write");
-    await invalidateCache(req, "doctors");
+    await invalidateCache("doctors");
     res.json({ success: true, message: "Profile Updated" });
   } catch (error) {
     console.log(error);

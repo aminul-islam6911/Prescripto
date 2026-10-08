@@ -10,7 +10,6 @@ import { issueAuthTokens } from "../utils/authTokens.js";
 import {
   getCachedData,
   invalidateCache,
-  logDatabaseAccess,
 } from "../utils/cache.js";
 
 // API to register user
@@ -83,7 +82,6 @@ const getProfile = async (req, res) => {
   try {
     const { userId } = req.body;
     const userData = await getCachedData(
-      req,
       { namespace: "profiles", key: `user:${userId}`, ttlSeconds: 60 },
       () => userModel.findById(userId).select("-password").lean()
     );
@@ -111,8 +109,7 @@ const updateProfile = async (req, res) => {
       dob,
       gender,
     });
-    logDatabaseAccess(req, "write");
-    await invalidateCache(req, "profiles");
+    await invalidateCache("profiles");
 
     if (imageFile) {
       // upload image to cloudinary
@@ -122,8 +119,7 @@ const updateProfile = async (req, res) => {
       const imageURL = imageUpload.secure_url;
 
       await userModel.findByIdAndUpdate(userId, { image: imageURL });
-      logDatabaseAccess(req, "write");
-      await invalidateCache(req, "profiles");
+      await invalidateCache("profiles");
     }
     res.json({ success: true, message: "Profile Updated" });
   } catch (error) {
@@ -136,7 +132,6 @@ const updateProfile = async (req, res) => {
 const bookAppointment = async (req, res) => {
   try {
     const { userId, docId, slotDate, slotTime } = req.body;
-    logDatabaseAccess(req, "read/write");
     const docData = await doctorModel.findById(docId).select("-password");
 
     if (!docData.available) {
@@ -174,13 +169,11 @@ const bookAppointment = async (req, res) => {
 
     const newAppointment = new appointmentModel(appointmentData);
     await newAppointment.save();
-    logDatabaseAccess(req, "write");
-    await invalidateCache(req, "appointments");
+    await invalidateCache("appointments");
 
     // saved slotData in docData
     await doctorModel.findByIdAndUpdate(docId, { slots_booked });
-    logDatabaseAccess(req, "write");
-    await invalidateCache(req, "doctors");
+    await invalidateCache("doctors");
     res.json({ success: true, message: "Appointment Booked" });
   } catch (error) {
     console.log(error);
@@ -193,7 +186,6 @@ const listAppointment = async (req, res) => {
   try {
     const { userId } = req.body;
     const appointments = await getCachedData(
-      req,
       {
         namespace: "appointments",
         key: `user:${userId}`,
@@ -214,7 +206,6 @@ const cancelAppointment = async (req, res) => {
   try {
     const { userId, appointmentId } = req.body;
 
-    logDatabaseAccess(req, "read/write");
     const appointmentData = await appointmentModel.findById(appointmentId);
 
     // verify appointment user
@@ -225,8 +216,7 @@ const cancelAppointment = async (req, res) => {
     await appointmentModel.findByIdAndUpdate(appointmentId, {
       cancelled: true,
     });
-    logDatabaseAccess(req, "write");
-    await invalidateCache(req, "appointments");
+    await invalidateCache("appointments");
 
     // await appointmentModel.findByIdAndDelete(appointmentId);
 
@@ -242,8 +232,7 @@ const cancelAppointment = async (req, res) => {
     );
 
     await doctorModel.findByIdAndUpdate(docId, { slots_booked });
-    logDatabaseAccess(req, "write");
-    await invalidateCache(req, "doctors");
+    await invalidateCache("doctors");
     res.json({ success: true, message: "Appointment cancelled" });
   } catch (error) {
     console.log(error);
@@ -254,7 +243,6 @@ const cancelAppointment = async (req, res) => {
 // API to make payment using bkash
 const createPayment = async (req, res) => {
   const { appointmentId } = req.body;
-  logDatabaseAccess(req);
   const appointmentData = await appointmentModel.findById(appointmentId);
 
   if (!appointmentData || appointmentData.cancelled) {
@@ -318,8 +306,7 @@ const verifyPayment = async (req, res) => {
           paymentId: data.paymentID,
           trxID: data.trxID,
         });
-        logDatabaseAccess(req, "write");
-        await invalidateCache(req, "appointments");
+        await invalidateCache("appointments");
       }
       return res.redirect(
         `${process.env.PAYMENT_STATUS_URL}?success=true&message=Payment+Successful+via+Bkash`

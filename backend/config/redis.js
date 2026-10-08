@@ -8,10 +8,6 @@ redisClient.on("error", (error) => {
   console.error("Redis client error:", error);
 });
 
-redisClient.on("ready", () => {
-  console.info("[Redis] Connection ready");
-});
-
 export const connectRedis = async () => {
   if (!process.env.REDIS_URL) {
     throw new Error("REDIS_URL must be configured");

@@ -5,11 +5,7 @@ import redisClient from "../config/redis.js";
 const createRedisStore = (prefix) =>
   new RedisStore({
     prefix,
-    sendCommand: async (...args) => {
-      const result = await redisClient.sendCommand(args);
-      console.info(`[Redis] Rate limit command: ${args[0]}`);
-      return result;
-    },
+    sendCommand: (...args) => redisClient.sendCommand(args),
   });
 
 const limitResponse = {
