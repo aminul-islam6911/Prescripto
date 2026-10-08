@@ -1,4 +1,4 @@
-import { createContext, useState } from "react";
+import { createContext, useEffect, useState } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 
@@ -13,6 +13,17 @@ const AdminContextProvider = (props) => {
   const [dashData, setDashData] = useState(false);
 
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
+
+  useEffect(() => {
+    const handleTokenRefreshed = (event) => {
+      if (event.detail.key === "aToken") {
+        setAToken(event.detail.token || "");
+      }
+    };
+    window.addEventListener("auth-token-refreshed", handleTokenRefreshed);
+    return () =>
+      window.removeEventListener("auth-token-refreshed", handleTokenRefreshed);
+  }, []);
 
   const getAllDoctors = async () => {
     try {

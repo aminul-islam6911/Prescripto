@@ -15,11 +15,15 @@ import {
 import authUser from "../middlewares/authUser.js";
 import upload from "../middlewares/multer.js";
 import authBkash from "../middlewares/authBkash.js";
+import { authRateLimiter } from "../middlewares/rateLimiters.js";
+import { logout, refreshToken } from "../controller/authController.js";
 
 const userRouter = express.Router();
 
-userRouter.post("/register", registerUser);
-userRouter.post("/login", loginUser);
+userRouter.post("/register", authRateLimiter, registerUser);
+userRouter.post("/login", authRateLimiter, loginUser);
+userRouter.post("/refresh-token", authRateLimiter, refreshToken("user"));
+userRouter.post("/logout", logout("user"));
 // userRouter.post("/forgot-password", forgotPassword);
 userRouter.get("/get-profile", authUser, getProfile);
 userRouter.post("/update-profile", upload.single("image"), authUser, updateProfile);

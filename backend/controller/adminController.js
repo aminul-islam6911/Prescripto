@@ -2,7 +2,7 @@ import validator from "validator";
 import bcrypt from "bcrypt";
 import { v2 as cloudinary } from "cloudinary";
 import doctorModel from "../models/doctorModel.js";
-import jwt from "jsonwebtoken";
+import { issueAuthTokens } from "../utils/authTokens.js";
 import appointmentModel from "../models/appointmentModel.js";
 import userModel from "../models/userModel.js";
 
@@ -95,14 +95,17 @@ const loginAdmin = async (req, res) => {
       email === process.env.ADMIN_EMAIL &&
       password === process.env.ADMIN_PASSWORD
     ) {
-      const token = jwt.sign(email + password, process.env.JWT_SECRET);
-      res.json({ success: true, token });
+      const authResponse = await issueAuthTokens(res, {
+        id: process.env.ADMIN_EMAIL,
+        role: "admin",
+      });
+      res.json(authResponse);
     } else {
       res.json({ success: false, message: "Invalid credential" });
     }
   } catch (error) {
     console.log(error);
-    res.json({ success: false, message: error.message });
+    res.status(500).json({ success: false, message: "Unable to login admin" });
   }
 };
 

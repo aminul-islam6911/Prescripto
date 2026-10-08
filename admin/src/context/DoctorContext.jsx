@@ -1,4 +1,4 @@
-import { createContext, useState } from "react";
+import { createContext, useEffect, useState } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 
@@ -12,6 +12,17 @@ const DoctorContextProvider = (props) => {
   const [appointments, setAppointments] = useState([]);
   const [dashData, setDashData] = useState(false);
   const [profileData, setProfileData] = useState(false);
+
+  useEffect(() => {
+    const handleTokenRefreshed = (event) => {
+      if (event.detail.key === "dToken") {
+        setDToken(event.detail.token || "");
+      }
+    };
+    window.addEventListener("auth-token-refreshed", handleTokenRefreshed);
+    return () =>
+      window.removeEventListener("auth-token-refreshed", handleTokenRefreshed);
+  }, []);
 
   const getAppointments = async () => {
     try {

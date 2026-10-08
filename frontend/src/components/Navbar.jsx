@@ -1,4 +1,5 @@
-import React, { useCallback, useContext, useState } from "react";
+import React, { useContext, useState } from "react";
+import axios from "axios";
 import { assets } from "../assets/assets";
 import { NavLink, useNavigate } from "react-router-dom";
 import { AppContext } from "../context/AppContext";
@@ -6,11 +7,20 @@ import { AppContext } from "../context/AppContext";
 const Navbar = () => {
   const navigate = useNavigate();
 
-  const { token, setToken, userData } = useContext(AppContext);
+  const { token, setToken, userData, backendUrl } = useContext(AppContext);
 
   const [showMenu, setShowMenu] = useState(false);
 
-  const logout = () => {
+  const logout = async () => {
+    try {
+      await axios.post(
+        backendUrl + "/api/user/logout",
+        {},
+        { withCredentials: true }
+      );
+    } catch (error) {
+      console.error("Unable to revoke user session:", error);
+    }
     setToken(false);
     localStorage.removeItem("token");
     navigate("/");

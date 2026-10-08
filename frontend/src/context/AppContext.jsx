@@ -59,6 +59,17 @@ const AppContextProvider = (props) => {
   };
 
   useEffect(() => {
+    const handleTokenRefreshed = (event) => {
+      if (event.detail.key === "token") {
+        setToken(event.detail.token || false);
+      }
+    };
+    window.addEventListener("auth-token-refreshed", handleTokenRefreshed);
+    return () =>
+      window.removeEventListener("auth-token-refreshed", handleTokenRefreshed);
+  }, []);
+
+  useEffect(() => {
     getDoctorsData();
   }, []);
 

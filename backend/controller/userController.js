@@ -1,12 +1,12 @@
 import validator from "validator";
 import bcrypt from "bcrypt";
 import userModel from "../models/userModel.js";
-import jwt from "jsonwebtoken";
 import { v2 as cloudinary } from "cloudinary";
 import doctorModel from "../models/doctorModel.js";
 import appointmentModel from "../models/appointmentModel.js";
 import axios from "axios";
 import { getValue } from "node-global-storage";
+import { issueAuthTokens } from "../utils/authTokens.js";
 
 // API to register user
 const registerUser = async (req, res) => {
@@ -35,11 +35,14 @@ const registerUser = async (req, res) => {
     const newUser = new userModel(userData);
     const user = await newUser.save();
 
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
-    res.json({ success: true, token });
+    const authResponse = await issueAuthTokens(res, {
+      id: user._id.toString(),
+      role: "user",
+    });
+    res.json(authResponse);
   } catch (error) {
     console.log(error);
-    res.json({ success: false, message: error.message });
+    res.status(500).json({ success: false, message: "Unable to register user" });
   }
 };
 
@@ -54,14 +57,17 @@ const loginUser = async (req, res) => {
     }
     const isMatch = await bcrypt.compare(password, user.password);
     if (isMatch) {
-      const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
-      res.json({ success: true, token });
+      const authResponse = await issueAuthTokens(res, {
+        id: user._id.toString(),
+        role: "user",
+      });
+      res.json(authResponse);
     } else {
       res.json({ success: false, message: "Invalid credentials" });
     }
   } catch (error) {
     console.log(error);
-    res.json({ success: false, message: error.message });
+    res.status(500).json({ success: false, message: "Unable to login user" });
   }
 };
 
