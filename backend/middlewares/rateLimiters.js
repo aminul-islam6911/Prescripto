@@ -13,22 +13,39 @@ const limitResponse = {
   message: "Too many requests. Please try again later.",
 };
 
-const createRateLimiter = (prefix, limit) => {
-  let limiter;
+let apiLimiter;
+let authLimiter;
 
-  return (req, res, next) => {
-    limiter ??= rateLimit({
-      windowMs: 15 * 60 * 1000,
-      limit,
-      standardHeaders: "draft-8",
-      legacyHeaders: false,
-      store: createRedisStore(prefix),
-      message: limitResponse,
-    });
+export const initializeRateLimiters = () => {
+  apiLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    limit: 120,
+    standardHeaders: "draft-8",
+    legacyHeaders: false,
+    store: createRedisStore("rate-limit:api:"),
+    message: limitResponse,
+  });
 
-    return limiter(req, res, next);
-  };
+  authLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    limit: 10,
+    standardHeaders: "draft-8",
+    legacyHeaders: false,
+    store: createRedisStore("rate-limit:auth:"),
+    message: limitResponse,
+  });
 };
 
-export const apiRateLimiter = createRateLimiter("rate-limit:api:", 120);
-export const authRateLimiter = createRateLimiter("rate-limit:auth:", 10);
+export const apiRateLimiter = (req, res, next) => {
+  if (!apiLimiter) {
+    return next(new Error("API rate limiter has not been initialized"));
+  }
+  return apiLimiter(req, res, next);
+};
+
+export const authRateLimiter = (req, res, next) => {
+  if (!authLimiter) {
+    return next(new Error("Authentication rate limiter has not been initialized"));
+  }
+  return authLimiter(req, res, next);
+};

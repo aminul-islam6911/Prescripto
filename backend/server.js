@@ -6,7 +6,10 @@ import connectDB from "./config/mongodb.js";
 import connectCloudinary from "./config/cloudinary.js";
 import { connectRedis } from "./config/redis.js";
 import { validateAuthConfiguration } from "./utils/authTokens.js";
-import { apiRateLimiter } from "./middlewares/rateLimiters.js";
+import {
+  apiRateLimiter,
+  initializeRateLimiters,
+} from "./middlewares/rateLimiters.js";
 import adminRouter from "./routes/adminRoute.js";
 import doctorRouter from "./routes/doctorRoute.js";
 import userRouter from "./routes/userRoute.js";
@@ -18,7 +21,7 @@ const port = process.env.PORT || 4000;
 // middlewares
 app.use(express.json());
 app.use(cookieParser());
-if (process.env.TRUST_PROXY === "true") {
+if (process.env.RENDER === "true" || process.env.TRUST_PROXY === "true") {
   app.set("trust proxy", 1);
 }
 
@@ -55,6 +58,7 @@ app.get("/", (req, res) => {
 const startServer = async () => {
   validateAuthConfiguration();
   await Promise.all([connectDB(), connectRedis()]);
+  initializeRateLimiters();
   connectCloudinary();
   app.listen(port, () => console.log("Server started", port));
 };
